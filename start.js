@@ -1,7 +1,9 @@
 "use strict";
 
-var ShadowBot = require('./src/Core.js');
-var fs = require('fs');
+const MessageTarget = require('./src/MessageTarget.js');
+
+const ShadowBot = require('./src/Core.js');
+const fs = require('fs');
 
 var shadow = new ShadowBot({
 	"connections": {
@@ -9,7 +11,6 @@ var shadow = new ShadowBot({
 			"hostname": "irc.ld-cdn.com",
 			"port": 6667,
 			"secure": false,
-			"debugChannel": "#bots",
 			"supportsFakePrivMsg": true
 		},
 		"facebook": {
@@ -29,18 +30,6 @@ var shadow = new ShadowBot({
 	"commandChar": "!"
 });
 
-shadow.on('connect', function() {
-	console.log("connected!");
-
-	let irc = shadow.getConnection("IRC");
-	irc.sendRaw("MODE", shadow.settings.username, "+B");
-	irc.sendRaw("VHOST", "nsa", "nsa");
-	irc.sendRaw("JOIN", "#bots");
-	//irc.sendRaw("JOIN", "#shadowacre");
-
-	irc.sendMessage("#shadowacre", "ShadowBot - version " + shadow.version + ". Misbehaving? /msg R4wizard");
-});
-
 shadow.on('message', (message, reply) => {
 	console.log("getConnection().name",          message.getConnection().name);
 	console.log("getSender().getIdentifier()",   message.getSender().getIdentifier());
@@ -57,6 +46,23 @@ shadow.on('message', (message, reply) => {
 
 	message.getResponse().sendMessage("test");
 	reply(message.getMessage());
+});
+
+shadow.on('error', (err, source) => {
+	let irc = shadow.getConnection("IRC");
+	let bots = new MessageTarget(irc, "#bots");
+	irc.sendMessage(bots, `[!!!][${source}] ${err}`);
 })
 
-shadow.start();
+shadow.start().then(() => {
+	console.log("connected!");
+
+	let irc = shadow.getConnection("IRC");
+	irc.sendRaw("MODE", shadow.settings.username, "+B");
+	irc.sendRaw("VHOST", "nsa", "nsa");
+	irc.sendRaw("JOIN", "#bots");
+	//irc.sendRaw("JOIN", "#shadowacre");
+
+	let shadowacre = new MessageTarget(irc, "#shadowacre");
+	irc.sendMessage(shadowacre, "ShadowBot - version " + shadow.version + ". Misbehaving? /msg R4wizard");
+});

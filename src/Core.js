@@ -2,6 +2,7 @@
 
 const events     = require('events');
 const _          = require('underscore');
+const Promise    = require('bluebird');
 
 const PluginHost = require('./PluginHost');
 
@@ -64,7 +65,7 @@ class Core extends events.EventEmitter {
 			promises.push(conn.connect());
 		});
 
-		Promise.all(promises).then(() => {
+		return Promise.all(promises).then(() => {
 			this.log("Core", `all connection handlers successfully started`);
 			this.emit("connect");
 		});
@@ -84,7 +85,14 @@ class Core extends events.EventEmitter {
 	}
 
 	error(source, err) {
+		if(typeof err === 'object' && typeof err.getMessage === 'function') {
+			err = err.getMessage();
+		} else if(typeof err !== 'string') {
+			err = JSON.stringify(err);
+		}
+
 		this.log(source, `[!!!] ${err}`);
+		this.emit('error', err, source);
 	}
 
 	log(source, message) {

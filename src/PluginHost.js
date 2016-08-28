@@ -29,8 +29,7 @@ class PluginHost extends events.EventEmitter {
 		this.unloadAll();
 
 		let plugins = [];
-		// load plugins here?
-		plugins.push("path/to/plugin");
+		plugins.push("plugins/sample/plugin.js");
 		return Promise.all(plugins);
 	}
 
