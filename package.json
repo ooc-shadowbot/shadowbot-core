@@ -1,0 +1,24 @@
+{
+  "name": "ShadowBot",
+  "description": "NSA Bot for IRC",
+  "version": "1.0.0",
+  "private": true,
+  "author": "R4Wizard",
+  "contributors": [
+    {
+      "name": "Eru"
+    },
+    {
+      "name": "Jinux"
+    }
+  ],
+  "scripts": {
+    "start": "node ./start.js"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "irc": "^0.5.0",
+    "messenger-bot": "^2.3.0",
+    "underscore": "^1.8.3"
+  }
+}
