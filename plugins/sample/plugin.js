@@ -1,6 +1,7 @@
 "use strict";
 
 class SamplePlugin {
+	
 	constructor() {
 		console.log("SamplePlugin constructed");
 	}
@@ -8,6 +9,7 @@ class SamplePlugin {
 	destroy() {
 		console.log("SamplePlugin destroyed");
 	}
+
 }
 
 module.exports = SamplePlugin;
