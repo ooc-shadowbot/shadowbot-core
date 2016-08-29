@@ -1,14 +1,15 @@
 "use strict";
 
 const events = require('events');
-const vm     = require('vm');
+const NodeVM = require('vm2').NodeVM;
+const path   = require('path');
 
 class Plugin extends events.EventEmitter {
 
-	constructor(name, path) {
+	constructor(name, pluginPath) {
 		super();
 		this._name = name;
-		this._path = path;
+		this._path = path.resolve(pluginPath);
 
 		this._instance = null;
 		this._context  = null;
@@ -19,20 +20,45 @@ class Plugin extends events.EventEmitter {
 			if(this._instance !== null)
 				throw new Error("plugin has already been initialised");
 
-			let loaded = () => {
-				this._instance = this._context.__instance;
-
-				delete this._context.__instance;
-				delete this._context.__loaded;
+			let loaded = instance => {
+				this._instance = instance;
 				accept();
 			};
 
-			this._context = vm.createContext({
+			let sandbox = {
 				__plugin: this,
 				__loaded: loaded
+			};
+
+			this._vm = new NodeVM({
+				console: 'redirect',
+				sandbox: sandbox,
+				require: {
+					external: true,
+					builtin: ['fs', 'path'],
+					root: "./",
+					context: 'sandbox'
+				}
 			});
 
-			vm.runInContext('var __instance = new (__plugin.getClass())(__loaded);', this._context);
+			['log', 'info', 'warn', 'error', 'dir', 'trace'].forEach(type => {
+				let eventName = `console.${type}`;
+				this._vm.on(eventName, (function() {
+					this.emit(eventName, arguments);
+				}).bind(this));
+			});
+
+			try {
+				this._vm.run(`
+					let __class = require(__plugin.getPath());
+					let __instance = new (__class)();
+					__loaded(__instance);
+				`, this.getPath());
+			} catch(e) {
+				console.log(e);
+				this.emit('console.error', e);
+				reject(e);
+			}
 		});
 	}
 
@@ -42,10 +68,6 @@ class Plugin extends events.EventEmitter {
 
 	getPath() {
 		return this._path;
-	}
-
-	getClass() {
-		return require(this._path);
 	}
 
 	getInstance() {

@@ -55,8 +55,6 @@ shadow.on('error', (err, source) => {
 })
 
 shadow.start().then(() => {
-	console.log("connected!");
-
 	let irc = shadow.getConnection("IRC");
 	irc.sendRaw("MODE", shadow.settings.username, "+B");
 	irc.sendRaw("VHOST", "nsa", "nsa");

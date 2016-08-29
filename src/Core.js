@@ -49,10 +49,7 @@ class Core extends events.EventEmitter {
 			new (require('./Connections/Facebook'))(this)
 		];
 
-		this.plugins = new PluginHost();
-
-		let plugin = new (require('./Plugin'))("test", "../plugins/sample/plugin");
-		this.plugins.load(plugin);
+		this.plugins = new PluginHost(this);
 	}
 
 	start() {
@@ -64,6 +61,8 @@ class Core extends events.EventEmitter {
 			});
 			promises.push(conn.connect());
 		});
+
+		promises.push(this.plugins.loadAll());
 
 		return Promise.all(promises).then(() => {
 			this.log("Core", `all connection handlers successfully started`);
@@ -85,18 +84,29 @@ class Core extends events.EventEmitter {
 	}
 
 	error(source, err) {
-		if(typeof err === 'object' && typeof err.getMessage === 'function') {
-			err = err.getMessage();
-		} else if(typeof err !== 'string') {
-			err = JSON.stringify(err);
-		}
-
+		err = this._prepareArgumentForLogging(err);
 		this.log(source, `[!!!] ${err}`);
 		this.emit('error', err, source);
 	}
 
-	log(source, message) {
-		console.log(`[${source}] ${message}`);
+	log(source, message, level) {
+		level = level || "info";
+
+		if(['info', 'warn', 'error'].indexOf(level) === -1)
+			level = "info";
+
+		message = this._prepareArgumentForLogging(message);
+		console.log(`[${level}][${source}] ${message}`);
+	}
+
+	_prepareArgumentForLogging(arg) {
+		if(typeof arg === 'object' && typeof arg.getMessage === 'function') {
+			arg = arg.getMessage();
+		} else if(typeof arg !== 'string') {
+			arg = JSON.stringify(arg);
+		}
+
+		return arg;
 	}
 
 }
