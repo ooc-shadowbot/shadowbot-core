@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "bluebird": "^3.4.1",
+    "glob": "^7.0.6",
     "irc": "^0.5.0",
     "messenger-bot": "^2.3.0",
     "nodemon": "^1.10.2",

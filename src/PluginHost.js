@@ -3,7 +3,9 @@
 const events  = require('events');
 const _       = require('underscore');
 const Promise = require('bluebird');
-const Plugin  = require('./Plugin.js')
+const glob    = require('glob');
+
+const Plugin  = require('./Plugin.js');
 
 class PluginHost extends events.EventEmitter {
 
@@ -30,9 +32,11 @@ class PluginHost extends events.EventEmitter {
 	loadAll() {
 		this.unloadAll();
 
-		let plugins = [];
-		plugins.push(this.load(new Plugin("SamplePlugin", "plugins/sample/plugin.js")));
-		return Promise.all(plugins);
+		let plugins = this._findPlugins();
+
+		return Promise.map(plugins, plugin => {
+			return Plugin.load(plugin).then(loaded => this.load(loaded));
+		});
 	}
 
 	load(plugin) {
@@ -44,6 +48,21 @@ class PluginHost extends events.EventEmitter {
 		this._loadedPlugins.set(plugin.getName(), plugin);
 
 		return plugin.initialise();
+	}
+
+	_findPlugins() {
+		let plugins = [];
+
+		// STEP 1: Find any local plugins - these override everything
+		plugins = plugins.concat(glob.sync(this._core.settings.dataPath + '/*/package.json'));
+
+		// STEP 2: Find any node_modules that belong in our ecosystem
+		plugins = plugins.concat(glob.sync('node_modules/shadowbot-plugin-*/package.json'));
+
+		// STEP 3: Find any built-in plugins
+		plugins = plugins.concat(glob.sync('plugins/*/package.json'));
+
+		return plugins;
 	}
 
 }

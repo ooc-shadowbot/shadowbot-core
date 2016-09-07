@@ -3,6 +3,7 @@
 const events = require('events');
 const NodeVM = require('vm2').NodeVM;
 const path   = require('path');
+const fs     = require('fs');
 
 class Plugin extends events.EventEmitter {
 
@@ -13,6 +14,23 @@ class Plugin extends events.EventEmitter {
 
 		this._instance = null;
 		this._context  = null;
+	}
+
+	static load(packageFilePath) {
+		return new Promise((accept, reject) => {
+			fs.readFile(packageFilePath, 'utf8', (err, data) => {
+				if(err) return reject(err);
+				let json = "";
+
+				try {
+					json = JSON.parse(data);
+				} catch(e) {
+					return reject(e);
+				}
+
+				accept(new Plugin(json.name, path.dirname(packageFilePath)));
+			});
+		});
 	}
 
 	initialise() {
@@ -60,6 +78,10 @@ class Plugin extends events.EventEmitter {
 				reject(e);
 			}
 		});
+	}
+
+	destroy() {
+		throw new Error("destruction of plugins isn't implimented yet");
 	}
 
 	getName() {

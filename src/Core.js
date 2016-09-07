@@ -38,7 +38,7 @@ class Core extends events.EventEmitter {
 				}
 			},
 			"username": "Shadow",
-			"dataPath": "./.data/",
+			"dataPath": "./.data",
 			"commandChar": "!"
 		});
 

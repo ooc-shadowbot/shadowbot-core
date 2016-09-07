@@ -26,7 +26,7 @@ var shadow = new ShadowBot({
 		}
 	},
 	"username": "Sh4dow",
-	"dataPath": "./.data/",
+	"dataPath": "./.data",
 	"commandChar": "!"
 });
 
