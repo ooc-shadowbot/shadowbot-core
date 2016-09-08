@@ -1,0 +1,14 @@
+{
+  "ecmaVersion": 6,
+  "libs": [
+    "underscore"
+  ],
+  "plugins": {
+    "node": {
+      "dontLoad": "",
+      "load": "",
+      "modules": ""
+    },
+    "node_resolve": {}
+  }
+}
