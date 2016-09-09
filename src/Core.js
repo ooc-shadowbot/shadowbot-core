@@ -3,6 +3,7 @@
 const events     = require('events');
 const _          = require('underscore');
 const Promise    = require('bluebird');
+const util       = require('util');
 
 const PluginHost = require('./PluginHost');
 
@@ -103,7 +104,7 @@ class Core extends events.EventEmitter {
 		if(typeof arg === 'object' && typeof arg.getMessage === 'function') {
 			arg = arg.getMessage();
 		} else if(typeof arg !== 'string') {
-			arg = JSON.stringify(arg);
+			arg = util.inspect(arg);
 		}
 
 		return arg;
