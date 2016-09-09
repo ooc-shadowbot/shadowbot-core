@@ -1,8 +1,11 @@
 "use strict";
 
-class SamplePlugin {
+const PluginBase = require('shadowbot-plugin-base');
+
+class SamplePlugin extends PluginBase {
 
 	constructor() {
+		super();
 		console.log("SamplePlugin constructed");
 	}
 
