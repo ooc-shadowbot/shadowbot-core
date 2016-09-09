@@ -5,7 +5,7 @@ const _       = require('underscore');
 const Promise = require('bluebird');
 const glob    = require('glob');
 
-const Plugin  = require('./Plugin.js');
+const Plugin  = require('./Plugin');
 
 class PluginHost extends events.EventEmitter {
 
@@ -44,6 +44,9 @@ class PluginHost extends events.EventEmitter {
 			let eventName = `console.${type}`;
 			plugin.on(`console.${type}`, args => this._core.log("Plugin/" + plugin.getName(), args, type));
 		});
+
+		if(this._loadedPlugins.has(plugin.getName()))
+			return Promise.resolve();
 
 		this._loadedPlugins.set(plugin.getName(), plugin);
 
