@@ -59,8 +59,8 @@ class PluginHost extends events.EventEmitter {
 		// STEP 1: Find any local plugins - these override everything
 		plugins = plugins.concat(glob.sync(this._core.settings.dataPath + '/*/package.json'));
 
-		// STEP 2: Find any node_modules that belong in our ecosystem
-		plugins = plugins.concat(glob.sync('node_modules/shadowbot-plugin-*/package.json'));
+		// STEP 2: Find any node_modules that belong in our ecosystem (excluding the base plugin!)
+		plugins = plugins.concat(glob.sync('node_modules/shadowbot-plugin-!(base)/package.json'));
 
 		// STEP 3: Find any built-in plugins
 		plugins = plugins.concat(glob.sync('plugins/*/package.json'));
