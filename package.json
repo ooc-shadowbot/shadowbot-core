@@ -1,8 +1,7 @@
 {
   "name": "shadowbot-core",
-  "description": "NSA Bot for IRC",
+  "description": "Our fancy little bot framework",
   "version": "1.0.1",
-  "private": true,
   "author": "R4Wizard",
   "contributors": [
     {
