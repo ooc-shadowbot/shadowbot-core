@@ -1,23 +1,23 @@
 "use strict";
 
-const events = require('events');
+const EventEmitter = require('./EventEmitter');
 
-class Connection extends events.EventEmitter {
+class Connection extends EventEmitter {
 
-	constructor(name, shadow) {
+	constructor(name, core) {
 		super();
 		this.name = name;
-		this.shadow = shadow;
+		this._core = core;
 
 		this.log(`initialized connection handler`);
 	}
 
 	_handleError(err) {
-		this.shadow.error(`Connection/${this.name}`, err);
+		this._core.error(`Connection/${this.name}`, err);
 	}
 
 	log(message) {
-		this.shadow.log(`Connection/${this.name}`, message);
+		this._core.log(`Connection/${this.name}`, message);
 	}
 
 }

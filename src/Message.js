@@ -1,11 +1,8 @@
 "use strict";
 
-const events = require('events');
-
-class Message extends events.EventEmitter {
+class Message {
 
 	constructor(connection, sender, context, message) {
-		super();
 		this._connection = connection;
 		this._sender     = sender;
 		this._context    = context;

@@ -1,13 +1,14 @@
 "use strict";
 
-const events     = require('events');
-const _          = require('underscore');
-const Promise    = require('bluebird');
-const util       = require('util');
+const _            = require('underscore');
+const Promise      = require('bluebird');
+const util         = require('util');
 
-const PluginHost = require('./PluginHost');
+const EventEmitter = require('./EventEmitter');
+const PluginHost   = require('./PluginHost');
+const Interface    = require('./Interface');
 
-class Core extends events.EventEmitter {
+class Core extends EventEmitter {
 
 	constructor(settings) {
 		super();
@@ -50,7 +51,12 @@ class Core extends events.EventEmitter {
 			new (require('./Connections/Facebook'))(this)
 		];
 
+		this.interface = new Interface(this);
 		this.plugins = new PluginHost(this);
+
+		this.onAny((...args) => {
+			this.interface.emit.apply(this.interface, args);
+		});
 	}
 
 	start() {

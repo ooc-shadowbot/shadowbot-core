@@ -1,17 +1,14 @@
 "use strict";
 
-const events  = require('events');
 const _       = require('underscore');
 const Promise = require('bluebird');
 const glob    = require('glob');
 
 const Plugin  = require('./Plugin');
 
-class PluginHost extends events.EventEmitter {
+class PluginHost {
 
 	constructor(core) {
-		super();
-
 		this._core = core;
 		this._loadedPlugins = new Map();
 	}
@@ -33,7 +30,6 @@ class PluginHost extends events.EventEmitter {
 		this.unloadAll();
 
 		let plugins = this._findPlugins();
-
 		return Promise.map(plugins, plugin => {
 			return Plugin.load(plugin).then(loaded => this.load(loaded));
 		});
@@ -50,7 +46,7 @@ class PluginHost extends events.EventEmitter {
 
 		this._loadedPlugins.set(plugin.getName(), plugin);
 
-		return plugin.initialise();
+		return plugin.initialise(this._core.interface);
 	}
 
 	_findPlugins() {

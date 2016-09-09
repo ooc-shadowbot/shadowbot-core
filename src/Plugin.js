@@ -1,14 +1,17 @@
 "use strict";
 
-const events = require('events');
 const NodeVM = require('vm2').NodeVM;
 const path   = require('path');
 const fs     = require('fs');
 
-class Plugin extends events.EventEmitter {
+const Interface    = require('./Interface');
+const EventEmitter = require('./EventEmitter');
+
+class Plugin extends EventEmitter {
 
 	constructor(name, pluginPath) {
 		super();
+
 		this._name = name;
 		this._path = path.resolve(pluginPath);
 
@@ -33,7 +36,7 @@ class Plugin extends events.EventEmitter {
 		});
 	}
 
-	initialise() {
+	initialise(iface) {
 		return new Promise((accept, reject) => {
 			if(this._instance !== null)
 				throw new Error("plugin has already been initialised");
@@ -46,6 +49,11 @@ class Plugin extends events.EventEmitter {
 					builtin: ['fs', 'path', 'events'],
 					root: "./",
 					context: 'sandbox',
+					mock: {
+						'shadowbot-core': {
+							Interface: iface
+						}
+					},
 					import: ['shadowbot-plugin-base']
 				}
 			});
@@ -66,8 +74,8 @@ class Plugin extends events.EventEmitter {
 				`, this.getPath());
 
 				this._instance = spawner(this.getPath());
+				accept(this._instance);
 			} catch(e) {
-				console.log(e);
 				this.emit('console.error', e);
 				reject(e);
 			}

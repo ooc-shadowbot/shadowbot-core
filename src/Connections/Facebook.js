@@ -9,8 +9,8 @@ const Message    = require('../Message');
 
 class Facebook extends Connection {
 
-	constructor(shadow) {
-		super("Facebook", shadow);
+	constructor(core) {
+		super("Facebook", core);
 
 		this._replyHandlers = {};
 	}
@@ -18,19 +18,19 @@ class Facebook extends Connection {
 	connect() {
 		return new Promise((accept, reject) => {
 			this._connection = new Bot({
-				token:      this.shadow.settings.connections.facebook.token,
-				verify:     this.shadow.settings.connections.facebook.verify,
-				app_secret: this.shadow.settings.connections.facebook.app_secret
+				token:      this._core.settings.connections.facebook.token,
+				verify:     this._core.settings.connections.facebook.verify,
+				app_secret: this._core.settings.connections.facebook.app_secret
 			});
 
 			this._connection.on('error', err => this._handleError(err));
 			this._connection.on('message', (payload, reply) => this._handleMessage(payload, reply));
 
 			this._https = https.createServer({
-				key:     this.shadow.settings.connections.https.key,
-				cert:    this.shadow.settings.connections.https.certificate,
-				ciphers: this.shadow.settings.connections.https.ciphers
-			}, this._connection.middleware()).listen(this.shadow.settings.connections.facebook.port);
+				key:     this._core.settings.connections.https.key,
+				cert:    this._core.settings.connections.https.certificate,
+				ciphers: this._core.settings.connections.https.ciphers
+			}, this._connection.middleware()).listen(this._core.settings.connections.facebook.port);
 
 			this.log(`connected and ready for messages`);
 			accept();
@@ -48,7 +48,7 @@ class Facebook extends Connection {
 	}
 
 	sendAction(target, message, nick) {
-		nick = nick || this.shadow.settings.username;
+		nick = nick || this._core.settings.username;
 		let reply = this._getReplyHandler(target.getIdentifier());
 		return (typeof reply === 'function') ? reply(`-${nickname} ${message}-`) : false;
 	}

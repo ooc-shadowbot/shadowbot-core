@@ -9,20 +9,21 @@ const MessageTarget = require('../MessageTarget');
 
 class IRC extends Connection {
 
-	constructor(shadow) {
-		super("IRC", shadow);
+	constructor(core) {
+		super("IRC", core);
+		this._d = Date.now();
 	}
 
 	connect() {
 		return new Promise((accept, reject) => {
 			this._connection = new irc.Client(
-				this.shadow.settings.connections.irc.hostname,
-				this.shadow.settings.username,
+				this._core.settings.connections.irc.hostname,
+				this._core.settings.username,
 				{
-					userName: this.shadow.settings.username,
-					realName: this.shadow.settings.username,
-					port:     this.shadow.settings.connections.irc.port,
-					secure:   !!this.shadow.settings.connections.irc.secure
+					userName: this._core.settings.username,
+					realName: this._core.settings.username,
+					port:     this._core.settings.connections.irc.port,
+					secure:   !!this._core.settings.connections.irc.secure
 				}
 			);
 
@@ -31,8 +32,8 @@ class IRC extends Connection {
 
 			this._connection.on('registered', () => {
 				this.log(`connected and ready for messages`);
-				accept();
 			});
+			accept();
 		});
 	}
 
@@ -41,14 +42,14 @@ class IRC extends Connection {
 	}
 
 	sendMessage(target, message, nick) {
-		if(nick !== undefined && this.shadow.settings.connections.irc.supportsFakePrivMsg == true)
+		if(nick !== undefined && this._core.settings.connections.irc.supportsFakePrivMsg == true)
 			return this.sendRaw("FAKEPRIVMSG", nick, target.getIdentifier(), message);
 
 		return this._connection.say(target.getIdentifier(), `${message}`);
 	}
 
 	sendAction(target, message, nick) {
-		if(nick !== undefined && this.shadow.settings.connections.irc.supportsFakePrivMsg == true)
+		if(nick !== undefined && this._core.settings.connections.irc.supportsFakePrivMsg == true)
 			return this.sendRaw("FAKEPRIVMSG", nick, target.getIdentifier(), `\u0001ACTION ${message}\u0001`);
 
 		return this._connection.say(target.getIdentifier(), `\u0001ACTION ${message}\u0001`);
