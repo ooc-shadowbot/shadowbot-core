@@ -38,24 +38,15 @@ class Plugin extends events.EventEmitter {
 			if(this._instance !== null)
 				throw new Error("plugin has already been initialised");
 
-			let loaded = instance => {
-				this._instance = instance;
-				accept();
-			};
-
-			let sandbox = {
-				__plugin: this,
-				__loaded: loaded
-			};
-
 			this._vm = new NodeVM({
 				console: 'redirect',
-				sandbox: sandbox,
+				sandbox: {},
 				require: {
 					external: true,
-					builtin: ['fs', 'path'],
+					builtin: ['fs', 'path', 'events'],
 					root: "./",
-					context: 'sandbox'
+					context: 'sandbox',
+					import: ['shadowbot-plugin-base']
 				}
 			});
 
@@ -67,11 +58,14 @@ class Plugin extends events.EventEmitter {
 			});
 
 			try {
-				this._vm.run(`
-					let __class = require(__plugin.getPath());
-					let __instance = new (__class)();
-					__loaded(__instance);
+				let spawner = this._vm.run(`
+					module.exports = path => {
+						let __class = require(path);
+						return new (__class)();
+					};
 				`, this.getPath());
+
+				this._instance = spawner(this.getPath());
 			} catch(e) {
 				console.log(e);
 				this.emit('console.error', e);
