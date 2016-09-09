@@ -1,7 +1,7 @@
 {
-  "name": "ShadowBot",
+  "name": "shadowbot-core",
   "description": "NSA Bot for IRC",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "author": "R4Wizard",
   "contributors": [
@@ -21,6 +21,7 @@
     "irc": "^0.5.0",
     "messenger-bot": "^2.3.0",
     "nodemon": "^1.10.2",
+    "shadowbot-plugin-base": "^1.0.0",
     "underscore": "^1.8.3",
     "vm2": "^3.0.1"
   }
