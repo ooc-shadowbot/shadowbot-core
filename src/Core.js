@@ -1,12 +1,13 @@
 "use strict";
 
-const _            = require('underscore');
-const Promise      = require('bluebird');
-const util         = require('util');
+const _              = require('underscore');
+const Promise        = require('bluebird');
+const util           = require('util');
 
-const EventEmitter = require('./EventEmitter');
-const PluginHost   = require('./PluginHost');
-const Interface    = require('./Interface');
+const EventEmitter   = require('./EventEmitter');
+const PluginHost     = require('./PluginHost');
+const Interface      = require('./Interface');
+const CommandHandler = require('./CommandHandler');
 
 class Core extends EventEmitter {
 
@@ -15,8 +16,6 @@ class Core extends EventEmitter {
 
 		this.version = require('../package.json').version;
 		process.title = "ShadowBot - version " + this.version;
-
-		this.__isShadow = true;
 
 		_.defaults(settings, {
 			"connections": {
@@ -51,11 +50,21 @@ class Core extends EventEmitter {
 			new (require('./Connections/Facebook'))(this)
 		];
 
+		this.commands = new Map();
+
 		this.interface = new Interface(this);
 		this.plugins = new PluginHost(this);
 
 		this.onAny((...args) => {
-			this.interface.emit.apply(this.interface, args);
+			try {
+				this.interface.emit.apply(this.interface, args);
+			} catch(e) {
+				this.error("Plugin", e);
+			}
+		});
+
+		this.interface.on('error', (...args) => {
+			this.emit.apply(this, args);
 		});
 	}
 
@@ -64,7 +73,20 @@ class Core extends EventEmitter {
 
 		this.connections.forEach(conn => {
 			conn.on("message", message => {
-				this.emit("message", message, (msg, nick) => message.getResponse().sendMessage(msg, nick));
+				let reply = (msg, nick) => message.getResponse().sendMessage(msg, nick);
+
+				if(message.isCommand())
+					this.emit("command." + message.getCommandName(), message, reply);
+
+				this.emit("message", message, reply);
+			});
+
+			conn.on("connected", () => {
+				this.emit(conn.getName().toLowerCase() + '.connected', conn);
+			});
+
+			conn.on("disconnected", () => {
+				this.emit(conn.getName().toLowerCase() + '.disconnected', conn);
 			});
 			promises.push(conn.connect());
 		});
@@ -80,10 +102,22 @@ class Core extends EventEmitter {
 	getConnection(name) {
 		let connection = null;
 		this.connections.forEach(conn => {
-			if(conn.name == name)
+			if(conn.name.toLowerCase() == name.toLowerCase())
 				connection = conn;
 		});
 		return connection;
+	}
+
+	getConnections() {
+		return this.connections;
+	}
+
+	getPlugin(name) {
+		return this.plugins.getPlugin(name);
+	}
+
+	getLoadedPlugins() {
+		return this.plugins.getLoadedPlugins();
 	}
 
 	stop() {
@@ -104,6 +138,13 @@ class Core extends EventEmitter {
 
 		message = this._prepareArgumentForLogging(message);
 		console.log(`[${level}][${source}] ${message}`);
+	}
+
+	registerCommandHandler(name, helptext, handler) {
+		if(this.commands.has(name))
+			throw new Error(`command ${name} is already registered.`);
+
+		this.commands.set(name, new CommandHandler(name, helptext, handler, this));
 	}
 
 	_prepareArgumentForLogging(arg) {
