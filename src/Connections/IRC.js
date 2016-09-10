@@ -32,13 +32,20 @@ class IRC extends Connection {
 
 			this._connection.on('registered', () => {
 				this.log(`connected and ready for messages`);
+				this.emit('connected');
+				accept();
 			});
-			accept();
+
+			this._connection.on('abort', () => {
+				this.log(`failed to maintain connection to irc server, aborting.`);
+				this.emit('disconnected');
+			});
 		});
 	}
 
 	disconnect() {
-		this._connection.close();
+		this._connection.disconnect();
+		this.emit('disconnected');
 	}
 
 	sendMessage(target, message, nick) {
@@ -61,6 +68,10 @@ class IRC extends Connection {
 
 	sendRaw() {
 		return this._connection.send.apply(this._connection, arguments);
+	}
+
+	isConnected() {
+		return this._connection.conn.readyState == 'open';
 	}
 
 	_handleMessage(from, to, text) {

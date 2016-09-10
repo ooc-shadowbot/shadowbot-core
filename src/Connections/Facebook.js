@@ -33,12 +33,12 @@ class Facebook extends Connection {
 			}, this._connection.middleware()).listen(this._core.settings.connections.facebook.port);
 
 			this.log(`connected and ready for messages`);
+			this.emit("connected");
 			accept();
 		});
 	}
 
 	disconnect() {
-		this._connection.close();
 		this._https.close();
 	}
 
@@ -61,6 +61,10 @@ class Facebook extends Connection {
 	sendRaw() {
 		// Facebook doesn't support any form of raw command sending.
 		return false;
+	}
+
+	isConnected() {
+		return this._https.listening;
 	}
 
 	_getReplyHandler(identifier) {
