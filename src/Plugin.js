@@ -4,22 +4,24 @@ const NodeVM = require('vm2').NodeVM;
 const path   = require('path');
 const fs     = require('fs');
 
+const Drawing      = require('./Drawing');
 const Interface    = require('./Interface');
 const EventEmitter = require('./EventEmitter');
 
 class Plugin extends EventEmitter {
 
-	constructor(name, pluginPath) {
+	constructor(name, pluginPath, core) {
 		super();
 
 		this._name = name;
 		this._path = path.resolve(pluginPath);
+		this._core = core;
 
 		this._instance = null;
 		this._context  = null;
 	}
 
-	static load(packageFilePath) {
+	static load(packageFilePath, core) {
 		return new Promise((accept, reject) => {
 			fs.readFile(packageFilePath, 'utf8', (err, data) => {
 				if(err) return reject(err);
@@ -31,7 +33,7 @@ class Plugin extends EventEmitter {
 					return reject(e);
 				}
 
-				accept(new Plugin(json.name, path.dirname(packageFilePath)));
+				accept(new Plugin(json.name, path.dirname(packageFilePath), core));
 			});
 		});
 	}
@@ -51,7 +53,8 @@ class Plugin extends EventEmitter {
 					context: 'sandbox',
 					mock: {
 						'shadowbot-core': {
-							Interface: iface
+							Interface: iface,
+							Drawing
 						}
 					},
 					import: ['shadowbot-plugin-base']
@@ -82,8 +85,18 @@ class Plugin extends EventEmitter {
 		});
 	}
 
+	isLoaded() {
+		return this._instance !== null;
+	}
+
+	isOverridden() {
+		return this._overriden;
+	}
+
 	destroy() {
-		throw new Error("destruction of plugins isn't implimented yet");
+		this._instance.destroy();
+		this._instance = null;
+		this._vm = null;
 	}
 
 	getName() {
@@ -96,6 +109,16 @@ class Plugin extends EventEmitter {
 
 	getInstance() {
 		return this._instance;
+	}
+
+	getSource() {
+		if(this._path.startsWith(path.resolve(this._core.settings.dataPath)))
+			return "local data path";
+
+		if(/node_modules(\\|\/)shadowbot-plugin-/.test(this._path))
+			return "node_modules";
+
+		return "built-in";
 	}
 
 }
