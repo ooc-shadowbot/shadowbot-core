@@ -39,20 +39,22 @@ class Message {
 	}
 
 	isDirect() {
-		let our_name = this._connection.shadow.settings.username;
+		let our_name = this._connection._core.settings.username;
 		return this.isPrivate() || this._message.substr(0, our_name.length) == our_name;
 	}
 
 	isCommand() {
-		return this._message[0] == this._connection.shadow.settings.commandChar;
+		let cmd_char = this._connection._core.settings.commandChar;
+		return this._message.substr(0, cmd_char.length) == cmd_char;
 	}
 
 	getCommandName() {
 		if(!this.isCommand())
 			return false;
 
+		let cmd_char = this._connection._core.settings.commandChar;
 		let command = this.getMessageSplit();
-		return command[0].substr(1);
+		return command[0].substr(cmd_char.length);
 	}
 
 	getCommandArguments() {
@@ -62,6 +64,17 @@ class Message {
 		let args = this.getMessageSplit();
 		args.shift(args);
 		return args;
+	}
+
+	getCommandArgument(index, defval = null) {
+		if(!this.isCommand())
+			return defval;
+
+		let args = this.getCommandArguments();
+		if(index < 0 || index >= args.length)
+			return defval;
+
+		return args[index];
 	}
 
 }
