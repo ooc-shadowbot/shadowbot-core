@@ -16,7 +16,7 @@ class MessageTarget {
 	}
 
 	isShadow() {
-		let our_name = this._connection.shadow.settings.username;
+		let our_name = this._connection._core.settings.username;
 		return this.getIdentifier().substr(0, our_name.length) == our_name;
 	}
 
