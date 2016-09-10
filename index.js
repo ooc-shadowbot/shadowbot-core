@@ -1,7 +1,7 @@
-const Interface = require('./src/Interface');
-
-let iface = new Interface(null);
+const Interface = new (require('./src/Interface'))(null);
+const Drawing = require('./src/Drawing');
 
 module.exports = {
-	Interface: iface
+	Interface,
+	Drawing
 };
