@@ -30,37 +30,21 @@ var shadow = new ShadowBot({
 	"commandChar": "!"
 });
 
-shadow.on('message', (message, reply) => {
-	console.log("getConnection().name",          message.getConnection().name);
-	console.log("getSender().getIdentifier()",   message.getSender().getIdentifier());
-	console.log("getResponse().getIdentifier()", message.getResponse().getIdentifier());
-	console.log("getContext().getIdentifier()",  message.getContext().getIdentifier());
-	console.log("getMessage()",                  message.getMessage());
-	console.log("getMessageSplit()",             message.getMessageSplit());
-	console.log("getMessageSplit('-')",          message.getMessageSplit('-'));
-	console.log("getCommandName()",              message.getCommandName());
-	console.log("getCommandArguments()",         message.getCommandArguments());
-	console.log("isPrivate()",                   message.isPrivate());
-	console.log("isDirect()",                    message.isDirect());
-	console.log("isCommand()",                   message.isCommand());
-
-	message.getResponse().sendMessage("test");
-	reply(message.getMessage());
-});
-
 shadow.on('error', (err, source) => {
 	let irc = shadow.getConnection("IRC");
 	let bots = new MessageTarget(irc, "#bots");
 	irc.sendMessage(bots, `[!!!][${source}] ${err}`);
-})
+});
 
-shadow.start().then(() => {
-	let irc = shadow.getConnection("IRC");
+shadow.on('irc.connected', irc => {
 	irc.sendRaw("MODE", shadow.settings.username, "+B");
 	irc.sendRaw("VHOST", "nsa", "nsa");
 	irc.sendRaw("JOIN", "#bots");
 	//irc.sendRaw("JOIN", "#shadowacre");
 
 	let shadowacre = new MessageTarget(irc, "#shadowacre");
+	shadowacre = new MessageTarget(irc, "#bots");
 	irc.sendMessage(shadowacre, "ShadowBot - version " + shadow.version + ". Misbehaving? /msg R4wizard");
 });
+
+shadow.start();
