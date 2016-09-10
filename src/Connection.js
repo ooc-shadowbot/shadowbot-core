@@ -12,6 +12,10 @@ class Connection extends EventEmitter {
 		this.log(`initialized connection handler`);
 	}
 
+	getName() {
+		return this.name;
+	}
+
 	_handleError(err) {
 		this._core.error(`Connection/${this.name}`, err);
 	}
