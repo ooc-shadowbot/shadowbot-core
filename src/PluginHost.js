@@ -42,14 +42,16 @@ class PluginHost {
 		});
 
 		if(this._loadedPlugins.has(plugin.getName())) {
-			plugin._overridden = true;
-			this._loadedPlugins.set(plugin.getName() + "-" + (Math.random() * 1e12 | 0), plugin);
-			return Promise.resolve();
+			let existing = this._loadedPlugins.get(plugin.getName());
+			if(existing.isLoaded()) {
+				plugin._overridden = true;
+				this._loadedPlugins.set(plugin.getName() + "-" + (Math.random() * 1e6 | 0), plugin);
+				return Promise.resolve();
+			}
 		}
 
 		this._loadedPlugins.set(plugin.getName(), plugin);
-
-		return plugin.initialise(this._core.interface);
+		return plugin.initialise(this._core.interface).catch(e => this._core.error("PluginHost", e));
 	}
 
 	getLoadedPlugins() {

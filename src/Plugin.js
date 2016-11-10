@@ -10,7 +10,7 @@ const EventEmitter = require('./EventEmitter');
 
 class Plugin extends EventEmitter {
 
-	constructor(name, pluginPath, core) {
+	constructor(name, pluginPath, pkg, core) {
 		super();
 
 		this._name = name;
@@ -19,13 +19,17 @@ class Plugin extends EventEmitter {
 
 		this._instance = null;
 		this._context  = null;
+
+		this._package = pkg;
+
+		this._overridden = false;
 	}
 
 	static load(packageFilePath, core) {
 		return new Promise((accept, reject) => {
 			fs.readFile(packageFilePath, 'utf8', (err, data) => {
 				if(err) return reject(err);
-				let json = "";
+				let json = {};
 
 				try {
 					json = JSON.parse(data);
@@ -33,7 +37,7 @@ class Plugin extends EventEmitter {
 					return reject(e);
 				}
 
-				accept(new Plugin(json.name, path.dirname(packageFilePath), core));
+				accept(new Plugin(json.name, path.dirname(packageFilePath), json, core));
 			});
 		});
 	}
@@ -90,7 +94,7 @@ class Plugin extends EventEmitter {
 	}
 
 	isOverridden() {
-		return this._overriden;
+		return this._overridden;
 	}
 
 	destroy() {
@@ -103,6 +107,10 @@ class Plugin extends EventEmitter {
 		return this._name;
 	}
 
+	getAuthor() {
+		return this._package.author || "Unknown";
+	}
+
 	getPath() {
 		return this._path;
 	}
@@ -113,12 +121,12 @@ class Plugin extends EventEmitter {
 
 	getSource() {
 		if(this._path.startsWith(path.resolve(this._core.settings.dataPath)))
-			return "local data path";
+			return "[1] local data path";
 
 		if(/node_modules(\\|\/)shadowbot-plugin-/.test(this._path))
-			return "node_modules";
+			return "[2] node_modules";
 
-		return "built-in";
+		return "[3] built-in";
 	}
 
 }
