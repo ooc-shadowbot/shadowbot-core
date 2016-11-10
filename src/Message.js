@@ -54,7 +54,7 @@ class Message {
 
 		let cmd_char = this._connection._core.settings.commandChar;
 		let command = this.getMessageSplit();
-		return command[0].substr(cmd_char.length);
+		return command[0].substr(cmd_char.length).toLowerCase();
 	}
 
 	getCommandArguments() {
