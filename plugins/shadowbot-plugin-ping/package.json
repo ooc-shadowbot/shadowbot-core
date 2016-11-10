@@ -1,0 +1,8 @@
+{
+  "name": "shadowbot-plugin-ping",
+  "description": "This plugin replies to a ping, with a pong!",
+  "version": "1.0.0",
+  "private": true,
+  "author": "R4Wizard",
+  "main": "plugin.js"
+}
