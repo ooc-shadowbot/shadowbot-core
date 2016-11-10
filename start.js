@@ -8,7 +8,7 @@ const fs = require('fs');
 var shadow = new ShadowBot({
 	"connections": {
 		"irc": {
-			"hostname": "irc.ld-cdn.com",
+			"hostname": "irc.shadowacre.ltd",
 			"port": 6667,
 			"secure": false,
 			"supportsFakePrivMsg": true
@@ -30,17 +30,20 @@ var shadow = new ShadowBot({
 	"commandChar": "!"
 });
 
+let connected = false;
 shadow.on('error', (err, source) => {
+	if(!connected) return;
 	let irc = shadow.getConnection("IRC");
 	let bots = new MessageTarget(irc, "#bots");
 	irc.sendMessage(bots, `[!!!][${source}] ${err}`);
 });
 
 shadow.on('irc.connected', irc => {
+	connected = true;
 	irc.sendRaw("MODE", shadow.settings.username, "+B");
 	irc.sendRaw("VHOST", "nsa", "nsa");
 	irc.sendRaw("JOIN", "#bots");
-	//irc.sendRaw("JOIN", "#shadowacre");
+	irc.sendRaw("JOIN", "#shadowacre");
 
 	let shadowacre = new MessageTarget(irc, "#shadowacre");
 	shadowacre = new MessageTarget(irc, "#bots");
