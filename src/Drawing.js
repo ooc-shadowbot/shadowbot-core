@@ -5,10 +5,20 @@ class Drawing {
 	static table(data, options = {}) {
 		let spacing = options.spacing || 3;
 		let border  = options.border  || Drawing.BORDER_LINE;
+		let sort    = options.sort    || null;
 
 		let headers = data[0];
 		if(options.headers !== false)
 			data.splice(0, 1);
+
+		if(sort !== null) {
+			let sorter = (a, b) => {
+				if(a[sort] < b[sort]) return -1;
+				if(a[sort] > b[sort]) return 1;
+				return 0;
+			};
+			data.sort(typeof sort == 'function' ? sort : sorter);
+		}
 
 		let table_width = 0;
 		let column_widths = new Array(headers.length);
