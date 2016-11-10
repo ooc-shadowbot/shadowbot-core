@@ -9,8 +9,12 @@ class Interface extends EventEmitter {
 		this._core = core;
 	}
 
-	command(name, helptext, handler) {
+	registerCommandHandler(name, helptext, handler) {
 		this._core.registerCommandHandler(name, helptext, handler);
+	}
+
+	unregisterCommandHandler(name, helptext, handler) {
+		this._core.unregisterCommandHandler(name);
 	}
 
 	getUser(name) {

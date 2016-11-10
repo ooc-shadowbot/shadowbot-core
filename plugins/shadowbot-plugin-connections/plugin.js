@@ -9,7 +9,7 @@ class ConnectionManager extends PluginBase {
 	constructor() {
 		super();
 
-		Shadow.command("connections", [
+		this.command("connections", [
 			"This tool is used to manage connections and view their current status.",
 			[
 				["list",       "list all connections and their status"],
@@ -18,9 +18,6 @@ class ConnectionManager extends PluginBase {
 				["reconnect",  "disconnect then reconnect to a connection"]
 			]
 		], this._cmdConnections.bind(this));
-	}
-
-	destroy() {
 	}
 
 	_cmdConnections(message, reply) {

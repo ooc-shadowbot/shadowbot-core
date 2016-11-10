@@ -9,10 +9,10 @@ class PluginManager extends PluginBase {
 	constructor() {
 		super();
 
-		Shadow.command("plugins", [
+		this.command("plugins", [
 			"This tool is used to manage plugins and view their status.",
 			[
-				["list",       "list all plugins and their status"],
+				["list [all]", "list all plugins and their status"],
 				["load",       "load a plugin"],
 				["unload",     "unload a plugin"],
 				["reload",     "reload a plugin"],
@@ -21,9 +21,6 @@ class PluginManager extends PluginBase {
 				["reload-all", "unload then reload all plugins"]
 			]
 		], this._cmdPlugins.bind(this));
-	}
-
-	destroy() {
 	}
 
 	_cmdPlugins(message, reply) {
@@ -42,18 +39,22 @@ class PluginManager extends PluginBase {
 	}
 
 	_cmdPluginsList(message, reply) {
-		let table = [["Plugin", "Source", "Status"]];
+		let table = [];
 
 		Shadow.getPluginHost().getLoadedPlugins().forEach(plugin => {
 			let status = plugin.isLoaded() ? "loaded" : "unloaded";
 
-			if(plugin.isOverridden())
+			if(plugin.isOverridden()) {
+				if(message.getCommandArgument(1, "") != "all")
+					return false;
 				status = "overridden";
+			}
 
-			table.push([plugin.getName(), plugin.getSource(), status]);
+			table.push([plugin.getName(), plugin.getAuthor(), plugin.getSource(), status]);
 		});
 
-		reply(Drawing.table(table));
+		table.unshift(["Plugin", "Author", "Source", "Status"]);
+		reply(Drawing.table(table, {sort: 2}));
 	}
 
 	_cmdPluginsLoad(message, reply) {

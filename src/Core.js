@@ -147,6 +147,11 @@ class Core extends EventEmitter {
 		this.commands.set(name, new CommandHandler(name, helptext, handler, this));
 	}
 
+	unregisterCommandHandler(name) {
+		this.commands.get(name).destroy();
+		this.commands.delete(name);
+	}
+
 	_prepareArgumentForLogging(arg) {
 		if(typeof arg === 'object' && typeof arg.getMessage === 'function') {
 			arg = arg.getMessage();
