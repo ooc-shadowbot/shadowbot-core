@@ -8,6 +8,7 @@ const EventEmitter   = require('./EventEmitter');
 const PluginHost     = require('./PluginHost');
 const Interface      = require('./Interface');
 const CommandHandler = require('./CommandHandler');
+const MessageHandler = require('./MessageHandler');
 
 class Core extends EventEmitter {
 
@@ -53,6 +54,7 @@ class Core extends EventEmitter {
 		];
 
 		this.commands = new Map();
+		this.messages = new Map();
 
 		this.interface = new Interface(this);
 		this.plugins = new PluginHost(this);
@@ -153,6 +155,18 @@ class Core extends EventEmitter {
 	unregisterCommandHandler(name) {
 		this.commands.get(name).destroy();
 		this.commands.delete(name);
+	}
+
+	registerMessageHandler(regex, handler) {
+		if(this.messages.has(regex))
+			throw new Error(`message ${regex} is already registered.`);
+
+		this.messages.set(regex, new MessageHandler(regex, handler, this));
+	}
+
+	unregisterMessageHandler(regex) {
+		this.messages.get(regex).destroy();
+		this.messages.delete(regex);
 	}
 
 	_prepareArgumentForLogging(arg) {

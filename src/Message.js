@@ -48,6 +48,10 @@ class Message {
 		return this._message.substr(0, cmd_char.length) == cmd_char;
 	}
 
+	match(regex) {
+		return this.getMessage().match(regex);
+	}
+
 	getCommandName() {
 		if(!this.isCommand())
 			return false;
