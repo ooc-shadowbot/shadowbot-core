@@ -1,8 +1,0 @@
-{
-  "name": "shadowbot-plugin-plugins",
-  "description": "This plugin allows management of all other plugins",
-  "version": "1.0.0",
-  "private": true,
-  "author": "R4Wizard",
-  "main": "plugin.js"
-}

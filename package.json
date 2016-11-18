@@ -1,14 +1,17 @@
 {
   "name": "shadowbot-core",
   "description": "Our fancy little bot framework",
-  "version": "1.0.3",
-  "author": "R4Wizard",
+  "version": "1.0.4",
+  "author": "$ourOpenCode",
   "contributors": [
     {
-      "name": "Eru"
+      "name": "R4wizard"
     },
     {
       "name": "Jinux"
+    },
+    {
+      "name": "Eru"
     }
   ],
   "scripts": {

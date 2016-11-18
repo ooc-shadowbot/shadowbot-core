@@ -1,8 +1,0 @@
-{
-  "name": "shadowbot-plugin-connections",
-  "description": "This plugin allows management of connections",
-  "version": "1.0.0",
-  "private": true,
-  "author": "R4Wizard",
-  "main": "plugin.js"
-}

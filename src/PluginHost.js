@@ -70,9 +70,6 @@ class PluginHost {
 		// STEP 2: Find any node_modules that belong in our ecosystem (excluding the base plugin!)
 		plugins = plugins.concat(glob.sync('node_modules/shadowbot-plugin-!(base)/package.json'));
 
-		// STEP 3: Find any built-in plugins
-		plugins = plugins.concat(glob.sync('plugins/*/package.json'));
-
 		return plugins;
 	}
 
