@@ -25,7 +25,7 @@ class PluginHost {
 
 	unload(plugin) {
 		if(plugin.getInstance())
-			return plugin.destroy();
+			return plugin._destroy();
 
 		return Promise.reject("plugin not loaded");
 	}
