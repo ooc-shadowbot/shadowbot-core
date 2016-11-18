@@ -3,7 +3,9 @@
 const _       = require('underscore');
 const Promise = require('bluebird');
 const glob    = require('glob');
+const path    = require('path');
 
+const Drawing = require('./Drawing');
 const Plugin  = require('./Plugin');
 
 class PluginHost {
@@ -11,6 +13,8 @@ class PluginHost {
 	constructor(core) {
 		this._core = core;
 		this._loadedPlugins = new Map();
+
+		this._interceptRequireResolve();
 	}
 
 	unloadAll() {
@@ -36,11 +40,6 @@ class PluginHost {
 	}
 
 	load(plugin) {
-		['log', 'info', 'warn', 'error', 'dir', 'trace'].forEach(type => {
-			let eventName = `console.${type}`;
-			plugin.on(`console.${type}`, args => this._core.log("Plugin/" + plugin.getName(), args, type));
-		});
-
 		if(this._loadedPlugins.has(plugin.getName())) {
 			let existing = this._loadedPlugins.get(plugin.getName());
 			if(existing.isLoaded()) {
@@ -51,7 +50,7 @@ class PluginHost {
 		}
 
 		this._loadedPlugins.set(plugin.getName(), plugin);
-		return plugin.initialise(this._core.interface).catch(e => this._core.error("PluginHost", e));
+		return plugin.initialise(this._core.interface).catch(e => this._core.error("Plugins/" + plugin.getName(), e));
 	}
 
 	getLoadedPlugins() {
@@ -75,6 +74,22 @@ class PluginHost {
 		plugins = plugins.concat(glob.sync('plugins/*/package.json'));
 
 		return plugins;
+	}
+
+	_interceptRequireResolve() {
+		const Module = require('module');
+		let _load = Module._load;
+
+		Module._load = (request, parent) => {
+			if(request == 'shadowbot-core') {
+				return {
+					Interface: this._core.interface,
+					Drawing: Drawing
+				};
+			}
+
+			return _load(request, parent);
+		};
 	}
 
 }

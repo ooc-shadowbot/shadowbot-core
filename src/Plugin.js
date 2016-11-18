@@ -1,11 +1,9 @@
 "use strict";
 
-const NodeVM = require('vm2').NodeVM;
-const path   = require('path');
-const fs     = require('fs');
+const path    = require('path');
+const fs      = require('fs');
+const decache = require('decache');
 
-const Drawing      = require('./Drawing');
-const Interface    = require('./Interface');
 const EventEmitter = require('./EventEmitter');
 
 class Plugin extends EventEmitter {
@@ -18,7 +16,6 @@ class Plugin extends EventEmitter {
 		this._core = core;
 
 		this._instance = null;
-		this._context  = null;
 
 		this._package = pkg;
 
@@ -47,43 +44,13 @@ class Plugin extends EventEmitter {
 			if(this._instance !== null)
 				throw new Error("plugin has already been initialised");
 
-			this._vm = new NodeVM({
-				console: 'redirect',
-				sandbox: {},
-				require: {
-					external: true,
-					builtin: ['fs', 'path', 'events'],
-					root: "./",
-					context: 'sandbox',
-					mock: {
-						'shadowbot-core': {
-							Interface: iface,
-							Drawing
-						}
-					},
-					import: ['shadowbot-plugin-base']
-				}
-			});
-
-			['log', 'info', 'warn', 'error', 'dir', 'trace'].forEach(type => {
-				let eventName = `console.${type}`;
-				this._vm.on(eventName, (function() {
-					this.emit(eventName, arguments);
-				}).bind(this));
-			});
-
 			try {
-				let spawner = this._vm.run(`
-					module.exports = path => {
-						let __class = require(path);
-						return new (__class)();
-					};
-				`, this.getPath());
+				decache(this.getPath());
+				let __class = require(this.getPath());
+				this._instance = new (__class)();
 
-				this._instance = spawner(this.getPath());
 				accept(this._instance);
 			} catch(e) {
-				this.emit('console.error', e);
 				reject(e);
 			}
 		});
@@ -100,7 +67,6 @@ class Plugin extends EventEmitter {
 	destroy() {
 		this._instance.destroy();
 		this._instance = null;
-		this._vm = null;
 	}
 
 	getName() {
