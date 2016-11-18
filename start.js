@@ -31,11 +31,11 @@ var shadow = new ShadowBot({
 });
 
 let connected = false;
-shadow.on('error', (err, source) => {
+shadow.on('log', (level, source, message) => {
 	if(!connected) return;
 	let irc = shadow.getConnection("IRC");
 	let bots = new MessageTarget(irc, "#bots");
-	irc.sendMessage(bots, `[!!!][${source}] ${err}`);
+	irc.sendMessage(bots, `[${level}][${source}] ${message}`);
 });
 
 shadow.on('irc.connected', irc => {
@@ -43,7 +43,7 @@ shadow.on('irc.connected', irc => {
 	irc.sendRaw("MODE", shadow.settings.username, "+B");
 	irc.sendRaw("VHOST", "nsa", "nsa");
 	irc.sendRaw("JOIN", "#bots");
-	irc.sendRaw("JOIN", "#shadowacre");
+	//irc.sendRaw("JOIN", "#shadowacre");
 
 	let shadowacre = new MessageTarget(irc, "#shadowacre");
 	shadowacre = new MessageTarget(irc, "#bots");

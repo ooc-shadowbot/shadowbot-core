@@ -45,6 +45,8 @@ class Core extends EventEmitter {
 
 		this.settings = settings;
 
+		this._interceptConsole();
+
 		this.connections = [
 			new (require('./Connections/IRC'))(this),
 			new (require('./Connections/Facebook'))(this)
@@ -137,7 +139,8 @@ class Core extends EventEmitter {
 			level = "info";
 
 		message = this._prepareArgumentForLogging(message);
-		console.log(`[${level}][${source}] ${message}`);
+		this._log(`[${level}][${source}] ${message}`);
+		this.emit("log", level, source, message);
 	}
 
 	registerCommandHandler(name, helptext, handler) {
@@ -160,6 +163,49 @@ class Core extends EventEmitter {
 		}
 
 		return arg;
+	}
+
+	_interceptConsole() {
+		this._log = console.log;
+
+		['log', 'info', 'warn', 'error', 'dir', 'trace'].forEach(type => {
+			const stock = console[type];
+
+			const intercept = (function() {
+				const args = Array.prototype.slice.call(arguments);
+
+				const source = this._findSourceInStack();
+
+				this.log(source, args.join(' '), type);
+
+				stock.apply(args);
+			}).bind(this);
+
+			console[type] = intercept;
+		});
+	}
+
+	_findSourceInStack() {
+		let source = "unknown";
+
+	    try {
+	        let err = new Error();
+	        Error.prepareStackTrace = function (err, stack) { return stack; };
+
+			// first lets use the nearest non-shadow stack location and strip away any shadow path
+			let root = require('path').resolve(__dirname + "\\..");
+			source = err.stack[2].getFileName().replace(root + "\\", "").replace(root + "/", "");
+
+			// now lets loop and try and find the applicable calling plugin
+			err.stack.forEach(i => {
+				this.plugins.getLoadedPlugins().forEach(p => {
+					if(i.getFileName().indexOf(p.getPath()) === 0)
+						source = "Plugin/" + p.getName();
+				});
+			});
+	    } catch (err) {}
+
+		return source;
 	}
 
 }
