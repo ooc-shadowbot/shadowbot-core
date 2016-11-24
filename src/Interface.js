@@ -45,6 +45,10 @@ class Interface extends EventEmitter {
 		return this._core.plugins;
 	}
 
+	getDataPath() {
+		return require('path').resolve(this._core.settings.dataPath);
+	}
+
 }
 
 module.exports = Interface;

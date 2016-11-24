@@ -65,7 +65,7 @@ class Plugin extends EventEmitter {
 	}
 
 	destroy() {
-		this._instance.destroy();
+		this._instance._destroy();
 		this._instance = null;
 	}
 
@@ -74,7 +74,15 @@ class Plugin extends EventEmitter {
 	}
 
 	getAuthor() {
-		return this._package.author || "Unknown";
+		let author = this._package.author;
+
+		if(typeof author == 'string')
+			return author;
+
+		if(typeof author == 'object' && typeof author.name == 'string')
+			return author.name;
+
+		return "Unknown";
 	}
 
 	getPath() {
@@ -95,6 +103,20 @@ class Plugin extends EventEmitter {
 		return "[3] built-in";
 	}
 
+	getSourceLevel() {
+		if(this._path.startsWith(path.resolve(this._core.settings.dataPath)))
+			return Plugin.SOURCE_LOCAL;
+
+		if(/node_modules(\\|\/)shadowbot-plugin-/.test(this._path))
+			return Plugin.SOURCE_MODULE;
+
+		return Plugin.SOURCE_BUILT_IN;
+	}
+
 }
+
+Plugin.SOURCE_LOCAL = 1;
+Plugin.SOURCE_MODULE = 2;
+Plugin.SOURCE_BUILT_IN = 3;
 
 module.exports = Plugin;

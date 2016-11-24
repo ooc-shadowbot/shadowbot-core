@@ -25,9 +25,9 @@ class PluginHost {
 
 	unload(plugin) {
 		if(plugin.getInstance())
-			return plugin._destroy();
+			return plugin.destroy();
 
-		return Promise.reject("plugin not loaded");
+		return Promise.resolve();
 	}
 
 	loadAll() {
@@ -69,7 +69,7 @@ class PluginHost {
 
 		// STEP 2: Find any node_modules that belong in our ecosystem (excluding the base plugin!)
 		plugins = plugins.concat(glob.sync('node_modules/shadowbot-plugin-!(base)/package.json'));
-
+		
 		return plugins;
 	}
 
