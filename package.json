@@ -1,7 +1,7 @@
 {
   "name": "shadowbot-core",
   "description": "Our fancy little bot framework",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "$ourOpenCode",
   "contributors": [
     {
